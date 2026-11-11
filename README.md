@@ -25,3 +25,10 @@ Built by Mohamed Salem – Expert AI Engineer & Automation Architect.
 
 ## Textures
 High-resolution masters (2048px PNG) live in `textures_src/` (git-ignored). The web build uses compressed JPEGs in `public/textures/` (albedo, `_normal`, `_rough`), mapped to GLB materials by name in `TEXTURE_MAP` (`src/main.js`). See `TEXTURE_BRIEF.md`.
+
+## Assets pipeline
+`src/assets.js` upgrades low-detail built-ins at load time:
+- `public/models/palm.glb` (optional) replaces the `trees` mesh with instanced date palms with wind sway.
+- Without it, `src/palm.js` builds a detailed procedural date palm (ringed trunk, ~38 pinnate fronds with leaflets, date clusters).
+- `STATUES` in `src/assets.js` lists statue GLBs (`public/models/statue_*.glb`) and where to place them.
+Sketchfab models under CC-BY require attribution; list them under Credits when used.

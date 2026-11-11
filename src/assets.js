@@ -9,6 +9,7 @@
 //   palm.glb            -> date palm (replaces the `trees` mesh, instanced)
 //   statue_*.glb        -> listed in STATUES below (placed at x,z; y snapped to ground)
 import * as THREE from 'three';
+import { buildPalm } from './palm.js';
 
 const exists = (url) => fetch(url, { method: 'HEAD' }).then((r) => r.ok && !/text\/html/.test(r.headers.get('content-type') || '')).catch(() => false);
 
@@ -74,6 +75,20 @@ export async function upgradeAssets(scene, model, gltfLoader, onWind) {
       }
       scene.add(group);
     }
+  }
+  // ----- procedural palms (when no palm.glb is provided) -----
+  else {
+    const trees = model.getObjectByName('trees');
+    const mesh = trees && (trees.isMesh ? trees : trees.children.find((c) => c.isMesh));
+    const spots = mesh ? treePositions(mesh) : [];
+    const palms = new THREE.Group(); palms.name = 'palms';
+    const variants = [1, 2, 3, 4].map((sd) => buildPalm(sd));
+    spots.forEach((p, i) => {
+      const src = variants[i % variants.length], o = src.clone();
+      const sc = 0.85 + ((i * 7919) % 100) / 300;
+      o.position.copy(p); o.rotation.y = (i * 2.4) % (Math.PI * 2); o.scale.setScalar(sc); palms.add(o);
+    });
+    if (spots.length) { mesh.visible = false; scene.add(palms); }
   }
   // ----- statues -----
   const ray = new THREE.Raycaster(); const ground = [];
