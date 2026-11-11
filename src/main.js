@@ -11,6 +11,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Sky } from 'three/examples/jsm/objects/Sky.js';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
+import { upgradeAssets } from './assets.js';
 
 const T = {
   ar: { title: 'عين حورس · معبد سيتي الأول وأوزيريون، أبيدوس', explore: 'استكشاف', walk: 'مشي', pano: 'صور 360° حقيقية', time: 'الوقت', ar: 'واقع معزز', vr: 'واقع افتراضي', loading: 'جارٍ تحميل المعبد…', noxr: 'غير مدعوم على هذا الجهاز' },
@@ -138,6 +139,7 @@ function applyCustomTextures(root) {
   }
 }
 
+const windTime = { value: 0 };
 // ---------- model ----------
 const draco = new DRACOLoader().setDecoderPath('/draco/');
 const gltf = new GLTFLoader().setDRACOLoader(draco);
@@ -163,6 +165,7 @@ gltf.load('/models/abydos.glb', (g) => {
     });
   });
   applyCustomTextures(model);
+  upgradeAssets(scene, model, gltf, windTime).catch((e) => console.warn('asset upgrade skipped', e));
   scene.add(model);
   const box = new THREE.Box3().setFromObject(model);
   const c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3());
@@ -248,6 +251,7 @@ renderer.setAnimationLoop((_, frame) => {
     const hits = frame.getHitTestResults(hitSrc);
     if (hits.length) { const p = hits[0].getPose(renderer.xr.getReferenceSpace()); reticle.visible = true; reticle.matrix.fromArray(p.transform.matrix); } else reticle.visible = false;
   }
+  windTime.value = performance.now() / 1000;
   controls.update();
   renderer.render(scene, camera);
 });
