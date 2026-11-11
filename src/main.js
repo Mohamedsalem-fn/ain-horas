@@ -183,7 +183,17 @@ gltf.load('/models/abydos.glb', (g) => {
 
 // ---------- real 360 panoramas (from bootstrap.json) ----------
 let nodes = [], pano = null, panoIdx = 0, mode = 'explore';
-fetch('/data/bootstrap.json').then((r) => r.json()).then((b) => { nodes = b.space.space_data.nodes; });
+fetch('/data/bootstrap.json')
+  .then((r) => {
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  })
+  .then((b) => {
+    nodes = b?.space?.space_data?.nodes || [];
+  })
+  .catch((err) => {
+    console.warn('Panoramas data load deferred or offline:', err.message);
+  });
 const texLoader = new THREE.CubeTextureLoader();
 function showPano(i) {
   const n = nodes[i]; if (!n) return;
