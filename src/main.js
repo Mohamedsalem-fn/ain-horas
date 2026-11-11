@@ -118,7 +118,10 @@ const TEXTURE_MAP = {
   sandstone: { re: /^sandstone|sandstone_blocks|pylon/, repeat: [6, 6] },
   limestone: { re: /limestone/, repeat: [6, 6] },
   granite: { re: /granite/, repeat: [4, 4] },
-  mudbrick: { re: /mud/, repeat: [8, 8] },
+  mudbrick: { re: /mudbrick|abydos_mud/, repeat: [8, 8] },
+  plaster: { re: /plaster/, repeat: [6, 6] },
+  paving: { re: /paving|flagstones/, repeat: [12, 12] },
+  dirt: { re: /^dirt$|rock_warm|abydos_cliff/, repeat: [10, 10] },
   sand: { re: /^sand$|desert|redsand/, repeat: [40, 40] }
 };
 function applyCustomTextures(root) {

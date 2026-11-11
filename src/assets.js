@@ -15,7 +15,10 @@ const exists = (url) => fetch(url, { method: 'HEAD' }).then((r) => r.ok && !/tex
 
 // Editable placements (world units of abydos.glb). file, position [x,z], rotationY (deg), height in metres.
 export const STATUES = [
-  // { file: 'statue_sphinx.glb', at: [0, 0], rotY: 0, height: 2.5 },
+  { file: 'nefertiti.glb', at: [125, -14], rotY: 180, height: 2.2 },
+  { file: 'nefertiti.glb', at: [130, -38], rotY: 0, height: 2.2 },
+  { file: 'nefertiti.glb', at: [60, -25], rotY: 90, height: 3.0 },
+  { file: 'nefertiti.glb', at: [10, -10], rotY: -90, height: 3.5 }
 ];
 
 // Cluster the vertices of the `trees` mesh into individual tree positions.
@@ -44,15 +47,25 @@ function treePositions(treesMesh) {
 }
 
 export async function upgradeAssets(scene, model, gltfLoader, onWind) {
+  // ----- remove and replace old tree mesh -----
+  const trees = model.getObjectByName('trees');
+  if (trees) {
+    trees.visible = false;
+    trees.traverse((child) => {
+      if (child.isMesh) {
+        child.visible = false;
+        if (child.geometry) child.geometry.dispose();
+      }
+    });
+  }
+
   // ----- palms -----
   if (await exists('/models/palm.glb')) {
-    const trees = model.getObjectByName('trees');
     const g = await gltfLoader.loadAsync('/models/palm.glb');
     const meshes = []; g.scene.traverse((o) => o.isMesh && meshes.push(o));
     const box = new THREE.Box3().setFromObject(g.scene), h = box.max.y - box.min.y;
     const spots = trees ? treePositions(trees.isMesh ? trees : trees.children.find((c) => c.isMesh)) : [];
     if (spots.length) {
-      trees.visible = false;
       const group = new THREE.Group(); group.name = 'palms';
       for (const m of meshes) {
         const inst = new THREE.InstancedMesh(m.geometry, m.material, spots.length);
@@ -78,7 +91,6 @@ export async function upgradeAssets(scene, model, gltfLoader, onWind) {
   }
   // ----- procedural palms (when no palm.glb is provided) -----
   else {
-    const trees = model.getObjectByName('trees');
     const mesh = trees && (trees.isMesh ? trees : trees.children.find((c) => c.isMesh));
     const spots = mesh ? treePositions(mesh) : [];
     const palms = new THREE.Group(); palms.name = 'palms';
@@ -88,7 +100,7 @@ export async function upgradeAssets(scene, model, gltfLoader, onWind) {
       const sc = 0.85 + ((i * 7919) % 100) / 300;
       o.position.copy(p); o.rotation.y = (i * 2.4) % (Math.PI * 2); o.scale.setScalar(sc); palms.add(o);
     });
-    if (spots.length) { mesh.visible = false; scene.add(palms); }
+    if (spots.length) { scene.add(palms); }
   }
   // ----- statues -----
   const ray = new THREE.Raycaster(); const ground = [];
