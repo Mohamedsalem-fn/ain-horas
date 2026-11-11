@@ -15,10 +15,7 @@ const exists = (url) => fetch(url, { method: 'HEAD' }).then((r) => r.ok && !/tex
 
 // Editable placements (world units of abydos.glb). file, position [x,z], rotationY (deg), height in metres.
 export const STATUES = [
-  { file: 'nefertiti.glb', at: [125, -14], rotY: 180, height: 2.2 },
-  { file: 'nefertiti.glb', at: [130, -38], rotY: 0, height: 2.2 },
-  { file: 'nefertiti.glb', at: [60, -25], rotY: 90, height: 3.0 },
-  { file: 'nefertiti.glb', at: [10, -10], rotY: -90, height: 3.5 }
+  // Drop-in compatible: place authentic 19th-Dynasty statues (e.g. Seti I, Osiris, Horus, or Ramesses II) in public/models/
 ];
 
 // Cluster the vertices of the `trees` mesh into individual tree positions.
