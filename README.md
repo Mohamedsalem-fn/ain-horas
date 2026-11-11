@@ -22,3 +22,6 @@ npm run build    # production build in dist/
 
 ## Credits / Author
 Built by Mohamed Salem – Expert AI Engineer & Automation Architect.
+
+## Textures
+High-resolution masters (2048px PNG) live in `textures_src/` (git-ignored). The web build uses compressed JPEGs in `public/textures/` (albedo, `_normal`, `_rough`), mapped to GLB materials by name in `TEXTURE_MAP` (`src/main.js`). See `TEXTURE_BRIEF.md`.

@@ -108,6 +108,36 @@ function noiseTexture(size = 512, octaves = 5) {
 }
 const detail = noiseTexture();
 
+// ---------- optional AI/photographic textures (public/textures) ----------
+// Each entry maps a texture file to GLB material names. Missing files are skipped silently.
+const TEXTURE_MAP = {
+  relief_painted: { re: /relief|kinglist|kadesh|stela|osiride|gates|chapel|nut|rii/, repeat: [2, 2] },
+  column_painted: { re: /column|pillar|egypt_band|kheker|capital/, repeat: [1, 2] },
+  ceiling_stars: { re: /vault/, repeat: [4, 4] },
+  sandstone: { re: /^sandstone|sandstone_blocks|pylon/, repeat: [6, 6] },
+  limestone: { re: /limestone/, repeat: [6, 6] },
+  granite: { re: /granite/, repeat: [4, 4] },
+  mudbrick: { re: /mud/, repeat: [8, 8] },
+  sand: { re: /^sand$|desert|redsand/, repeat: [40, 40] }
+};
+function applyCustomTextures(root) {
+  const loader = new THREE.TextureLoader();
+  const mats = new Set();
+  root.traverse((o) => o.isMesh && (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => mats.add(m)));
+  for (const [file, { re, repeat }] of Object.entries(TEXTURE_MAP)) {
+    const targets = [...mats].filter((m) => re.test(m.name));
+    if (!targets.length) continue;
+    const load = (suffix, cs, apply) => loader.load(`/textures/${file}${suffix}.jpg`, (t) => {
+      t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...repeat); t.colorSpace = cs;
+      t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      targets.forEach((m) => { apply(m, t); m.needsUpdate = true; });
+    }, undefined, () => {});
+    load('', THREE.SRGBColorSpace, (m, t) => { m.map = t; m.color.set(0xffffff); });
+    load('_normal', THREE.NoColorSpace, (m, t) => { m.normalMap = t; m.bumpMap = null; });
+    load('_rough', THREE.NoColorSpace, (m, t) => { m.roughnessMap = t; });
+  }
+}
+
 // ---------- model ----------
 const draco = new DRACOLoader().setDecoderPath('/draco/');
 const gltf = new GLTFLoader().setDRACOLoader(draco);
@@ -132,6 +162,7 @@ gltf.load('/models/abydos.glb', (g) => {
       if (/gold|bronze/.test(m.name)) { m.metalness = 1; m.roughness = 0.25; }
     });
   });
+  applyCustomTextures(model);
   scene.add(model);
   const box = new THREE.Box3().setFromObject(model);
   const c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3());
