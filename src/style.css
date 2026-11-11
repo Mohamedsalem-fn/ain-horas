@@ -11,3 +11,4 @@ html,body{margin:0;height:100%;background:#0b0907;color:#f3e3bd;font-family:"Seg
 button{background:#1a130acc;color:#f3e3bd;border:1px solid #e6b84f88;border-radius:999px;padding:9px 18px;font:inherit;cursor:pointer;backdrop-filter:blur(8px)}
 button:hover,button.on{background:#e6b84f;color:#1a130a}
 #info{position:fixed;top:60px;inset-inline:0;text-align:center;pointer-events:none;text-shadow:0 1px 6px #000;z-index:4;font-size:14px;opacity:.85}
+

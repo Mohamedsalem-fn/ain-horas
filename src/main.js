@@ -84,6 +84,30 @@ function setTime(h) {
 setTime(hour);
 $('#bTime').onclick = () => { hour = hour >= 18 ? 6 : hour + 1.5; setTime(hour); };
 
+// ---------- atmosphere & procedural surface detail ----------
+scene.fog = new THREE.FogExp2(0xe6d2a8, 0.0006);
+function noiseTexture(size = 512, octaves = 5) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'), img = g.createImageData(size, size);
+  const grid = [];
+  for (let o = 0; o < octaves; o++) { const n = 4 << o; grid.push({ n, v: Array.from({ length: n * n }, Math.random) }); }
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    let v = 0, a = 0.5;
+    for (const { n, v: d } of grid) {
+      const fx = (x / size) * n, fy = (y / size) * n, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+      const f = (i, j) => d[((j % n) * n) + (i % n)];
+      const top = f(x0, y0) * (1 - tx) + f(x0 + 1, y0) * tx, bot = f(x0, y0 + 1) * (1 - tx) + f(x0 + 1, y0 + 1) * tx;
+      v += (top * (1 - ty) + bot * ty) * a; a *= 0.5;
+    }
+    const k = Math.min(255, v * 255 * 1.9), i = (y * size + x) * 4;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = k; img.data[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(6, 6);
+  return t;
+}
+const detail = noiseTexture();
+
 // ---------- model ----------
 const draco = new DRACOLoader().setDecoderPath('/draco/');
 const gltf = new GLTFLoader().setDRACOLoader(draco);
@@ -98,6 +122,11 @@ gltf.load('/models/abydos.glb', (g) => {
     ms.forEach((m) => {
       for (const k of ['map', 'normalMap', 'roughnessMap']) if (m[k]) { m[k].anisotropy = maxAniso; m[k].needsUpdate = true; }
       m.envMapIntensity = 0.8;
+      if (/sandstone|limestone|granite|rock|cliff|pillar|column|pylon|dado|flagstones|paving|mud|sand|dirt/.test(m.name)) {
+        m.bumpMap = detail; m.bumpScale = 1.2; m.roughnessMap = m.roughnessMap || detail;
+        m.roughness = Math.max(m.roughness ?? 0.9, 0.85);
+        if (m.map && /sand|desert|dirt|redsand/.test(m.name)) m.color.setRGB(1.05, 0.98, 0.88);
+      }
       if (/water/.test(m.name)) { m.roughness = 0.05; m.metalness = 0.1; m.transparent = true; m.opacity = 0.85; }
       if (/foliage|palm|trees/.test(m.name)) { m.alphaTest = 0.4; m.side = THREE.DoubleSide; }
       if (/gold|bronze/.test(m.name)) { m.metalness = 1; m.roughness = 0.25; }
@@ -191,3 +220,4 @@ renderer.setAnimationLoop((_, frame) => {
   controls.update();
   renderer.render(scene, camera);
 });
+
