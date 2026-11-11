@@ -1,0 +1,11 @@
+{
+  "name": "ain-horas-abydos-xr",
+  "version": "1.0.0",
+  "description": "Photorealistic WebXR/AR experience of the Temple of Seti I and the Osireion at Abydos",
+  "author": "Mohamed Salem",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "vite --host", "build": "vite build", "preview": "vite preview --host" },
+  "dependencies": { "three": "^0.170.0" },
+  "devDependencies": { "vite": "^5.4.0" }
+}
